@@ -1,17 +1,17 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Auth from './Authorization/Auth';
 import Main from './Main/Main';
-import './App.css';
+import Admin from './Admin/Admin';
+
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
-      </div>
     </BrowserRouter>
   );
 }

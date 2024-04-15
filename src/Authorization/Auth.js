@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
     const [login, setLogin] = useState('');
@@ -6,9 +8,38 @@ const Auth = () => {
     const [otp, setOtp] = useState('');
     const [otpSended, setOtpSended] = useState(false);
 
-    const getOtp = () => {
-        setOtpSended(true);
-        console.log(login, password)
+    const navigate = useNavigate();
+
+    const getOtp = async () => {
+        try {
+            const data = {
+                login, 
+                password,
+                isAdmin: sessionStorage.getItem('redirect') === "/admin"
+            }
+            const response = await axios.post('/api/user/otp', data);
+            if(response.status === 200) {
+                setOtpSended(true);
+            }
+          } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+    }
+
+    const verify = async () => {
+        try {
+            const data = {
+                login, 
+                otp
+            }
+            const response = await axios.post('/api/user/login', data);
+            if(response.status === 200) {
+                localStorage.setItem("access_token", response.headers.authorization);
+                navigate(sessionStorage.getItem('redirect'));
+            }
+          } catch (error) {
+            console.error('Error uploading file:', error);
+        }
     }
 
     const loginField = useRef(null);
@@ -88,7 +119,8 @@ const Auth = () => {
                             <button
                                 type='button'
                                 className="con-btn form-control con-color"
-                                ref={confirmBtn}>Подтвердить</button>
+                                ref={confirmBtn}
+                                onClick={verify}>Подтвердить</button>
                         </div>
                     </div>
                 )}

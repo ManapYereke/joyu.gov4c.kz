@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Main = () => {
     const [applicationId, setApplicationId] = useState('');
     const [examType, setExamType] = useState('THEORY');
     const [file, setFile] = useState(null);
+
+    const navigate = useNavigate();
+
 
     const filterDigits = (value) => {
         const numericValue = value.replace(/\D/g, '');
@@ -11,23 +16,57 @@ const Main = () => {
     };
 
     const handleFileChange = (event) => {
-        setFile(event.target.file);
+        setFile(event.target.files[0]);
+        console.log(event.target.files[0])
     };
 
-    const deleteApp = () => {
+    const deleteApp = async () => {
         try {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-              const base64File = reader.result.split(',')[1]; // Отделяем часть base64 данных после запятой
-              const response = await axios.post('http://example.com/upload', { file: base64File });
-      
-              console.log('File uploaded successfully:', response.data);
+                try {
+                    const base64File = reader.result;
+                    const response = await axios.post(`/api/archive`, { application_id: applicationId, exam_type: examType, file: base64File, file_name: file.name }, {
+                        headers: {
+                            Authorization: localStorage.getItem("access_token")
+                        }
+                    });
+                    console.log('File uploaded successfully:', response.data);
+                } catch (error) {
+                    if (error.response) {
+                        console.error('Server error:', error.response.data);
+                        if ([401, 403].includes(error.response.status)) {
+                            localStorage.removeItem("access_token");
+                            sessionStorage.setItem("redirect", "/main");
+                            navigate('/auth');
+                        }
+                    } else if (error.request) {
+                        console.error('Network error:', error.request);
+                    } else {
+                        console.error('Error:', error.message);
+                    }
+                }
             };
-          } catch (error) {
-            console.error('Error uploading file:', error);
-          }
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
     }
+
+    useEffect(() => {
+        if (!localStorage.getItem("access_token")) {
+            sessionStorage.setItem("redirect", "/main");
+            navigate('/auth');
+        }
+        /*const checkTokenExpiration = () => {
+            // Проверка срока действия accessToken
+            // Если срок истек, обновляем токены через refreshToken
+            // Для примера, здесь может быть ваша логика проверки срока действия токенов
+        };
+
+        const intervalId = setInterval(checkTokenExpiration, 60000); // Проверка каждую минуту
+        return () => clearInterval(intervalId);*/
+    }, []);
 
     return (
         <div>
@@ -42,7 +81,7 @@ const Main = () => {
                         placeholder='Номер заявки'
                         maxLength={12}
                         value={applicationId}
-                        
+
                         onChange={(e) => filterDigits(e.target.value)} />
                     <label htmlFor="exam_type">Вид экзамена</label>
                     <select defaultValue={examType} id="exam_type" className='form-control select' onChange={(e) => setExamType(e.target.value)}>
@@ -50,13 +89,13 @@ const Main = () => {
                         <option value="DRIVING">Практика</option>
                         <option value="ALL">Все</option>
                     </select>
-                    <input type='file' onChange={handleFileChange}/>
+                    <input type='file' onChange={e => handleFileChange(e)} />
                     <div className="form-group">
                         <button
                             type='button'
                             className="con-btn form-control con-color"
                             onClick={deleteApp}
-                            >Удалить</button>
+                        >Удалить</button>
                     </div>
                 </form>
             </div>

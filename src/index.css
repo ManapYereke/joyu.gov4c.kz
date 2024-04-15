@@ -10,6 +10,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
   background-color: #f8f8f8;
+  text-align: center;
 }
 
 code {
@@ -38,6 +39,10 @@ code {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+#user-form{
+  text-align: left;
+}
+
 .form-group{
   padding: 4px 0px;
 }
@@ -53,6 +58,10 @@ code {
 .input{
   width: calc(100% - 2.025rem);
   height: 1.8rem;
+}
+
+.select{
+  height: 2.5rem;
 }
 
 .con-btn{
@@ -79,6 +88,7 @@ code {
     padding: 20px;
     background-color: #333;
     color: white;
+    margin-block-start: 0;
 }
 
 .main-container {
@@ -92,6 +102,11 @@ code {
 
 label {
   font-weight: bold;
+  text-align: left;
+  margin: 0.2rem;
+}
+
+.result{
   text-align: left;
 }
 
